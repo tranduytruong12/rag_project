@@ -1,0 +1,101 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rag-project"
+version = "0.1.0"
+description = "RAG (Retrieval-Augmented Generation) system scaffold — production-ready foundation"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Your Name", email = "you@example.com" }]
+
+dependencies = [
+    # Web framework
+    "fastapi>=0.100.0",
+    "uvicorn[standard]>=0.20.0",
+    # Schema / validation
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    # Async HTTP (for external API calls)
+    "httpx>=0.24.0",
+    # Structured logging
+    "structlog>=23.0.0",
+    # Environment
+    "python-dotenv>=1.0.0",
+    # Type stubs helpers
+    "typing-extensions>=4.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    # Testing
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0.0",
+    "httpx>=0.24.0",
+    # Lint / format
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+    # Pre-commit
+    "pre-commit>=3.0.0",
+]
+
+# ---------- Ruff (lint + format) ----------
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests", "scripts"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "UP",  # pyupgrade
+    "N",   # pep8-naming
+    "ANN", # flake8-annotations (encourage type hints)
+    "RUF", # ruff-specific
+]
+ignore = [
+    "ANN101", # missing type for self
+    "ANN102", # missing type for cls
+    "ANN401", # allow Any where needed
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["rag"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+# ---------- Mypy ----------
+[tool.mypy]
+python_version = "3.11"
+strict = false
+ignore_missing_imports = true
+warn_return_any = true
+warn_unused_configs = true
+
+# ---------- Pytest ----------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-v --tb=short --cov=src/rag --cov-report=term-missing"
+
+# ---------- Coverage ----------
+[tool.coverage.run]
+source = ["src/rag"]
+omit = ["*/tests/*", "*/__init__.py"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 0   # set to e.g. 70 when real tests are added
+
+# ---------- Package discovery ----------
+[tool.setuptools.packages.find]
+where = ["src"]
