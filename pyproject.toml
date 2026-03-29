@@ -7,9 +7,9 @@ name = "rag-project"
 version = "0.1.0"
 description = "RAG (Retrieval-Augmented Generation) system scaffold — production-ready foundation"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 license = { text = "MIT" }
-authors = [{ name = "Your Name", email = "you@example.com" }]
+authors = [{ name = "Tran Duy Truong", email = "truong311203@gmail.com" }]
 
 dependencies = [
     # Web framework
@@ -26,6 +26,8 @@ dependencies = [
     "python-dotenv>=1.0.0",
     # Type stubs helpers
     "typing-extensions>=4.0.0",
+    # Vector DB
+    "chromadb>=0.4.0",
 ]
 
 [project.optional-dependencies]

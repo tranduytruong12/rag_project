@@ -214,10 +214,10 @@ ptw tests/
 Ordered by priority for a typical intern sprint:
 
 ### Sprint 1 — Connect real backends
-- [ ] `embedding/openai_embedder.py` — wire up `openai.embeddings.create()`
-- [ ] `vector_store/chroma_store.py` — install `chromadb`, implement `add_chunks()` + `search()`
-- [ ] `generator/openai_generator.py` — wire up `openai.chat.completions.create()`
-- [ ] Update `.env` with a real `OPENAI_API_KEY` and test end-to-end
+- [x] `embedding/openai_embedder.py` — wire up `openai.embeddings.create()`
+- [x] `vector_store/chroma_store.py` — install `chromadb`, implement `add_chunks()` + `search()`
+- [x] `generator/openai_generator.py` — wire up `openai.chat.completions.create()`
+- [x] Update `.env` with a real `OPENAI_API_KEY` and test end-to-end
 
 ### Sprint 2 — Improve chunking & retrieval
 - [ ] `chunking/text_splitter.py` — implement true recursive separator logic

@@ -13,7 +13,6 @@ Usage::
     python scripts/ingest.py --source data/raw/ --dry-run
 
 TODO:
-  - Add progress bar (tqdm)
   - Add support for PDF / DOCX via respective loaders
   - Add deduplication check before re-ingesting
   - Add JSON output mode for CI pipelines

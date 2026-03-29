@@ -23,7 +23,7 @@ def override_settings(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("APP_ENV", "development")
     monkeypatch.setenv("APP_DEBUG", "true")
     monkeypatch.setenv("LOG_LEVEL", "ERROR")  # suppress noisy logs in tests
-    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key") # Remember to disable this line if you want to use OpenAI
     monkeypatch.setenv("VECTOR_STORE_BACKEND", "chroma")
     monkeypatch.setenv("CHROMA_PERSIST_DIR", "/tmp/test_chroma")
 
