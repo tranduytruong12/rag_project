@@ -40,12 +40,6 @@ class OpenAIEmbedder(BaseEmbedder):
         """
         Embed texts via the OpenAI embeddings endpoint.
         """
-        logger.warning(
-            "embedder_stub",
-            model=self._model,
-            text_count=len(texts),
-            message="Returning embedding vectors. Implement OpenAI API call.",
-        )
         response = self._client.embeddings.create(input=texts, model=self._model)
         return [sentence.embedding for sentence in response.data]
 

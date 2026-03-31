@@ -12,16 +12,19 @@ TODO:
 """
 
 from __future__ import annotations
-
+import numpy as np
 from rag.chunking.base import BaseChunker
 from rag.schemas.document import Chunk, Document
+from rag.embedding.base import BaseEmbedder
 from rag.utils import get_logger
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 logger = get_logger(__name__)
 
 # Separators tried in order by RecursiveChunker
 _DEFAULT_SEPARATORS = ["\n\n", "\n", ". ", " ", ""]
 
+_SENTENCE_SEPARATORS = [". ", "! ", "? ", "\n"]
 
 class FixedSizeChunker(BaseChunker):
     """
@@ -109,20 +112,99 @@ class RecursiveChunker(BaseChunker):
     def split(self, document: Document) -> list[Chunk]:
         """
         Recursively split document text.
-
-        Current implementation: delegates to FixedSizeChunker as a placeholder.
-        TODO: Replace with true recursive separator logic.
         """
-        logger.warning(
-            "recursive_chunker_stub",
-            message="RecursiveChunker falls back to FixedSizeChunker. Implement recursive logic.",
+        logger.info(
+            "recursive_chunker",
+            message="RecursiveChunker.",
         )
-        fallback = FixedSizeChunker(
+        text_splitter = RecursiveCharacterTextSplitter(
+            separators=self._separators,
             chunk_size=self._chunk_size,
             chunk_overlap=self._chunk_overlap,
         )
-        chunks = fallback.split(document)
-        # Tag chunks so callers know this is still a stub
-        for chunk in chunks:
-            chunk.metadata["chunker"] = "recursive_stub"
+        chunks_text = text_splitter.split_text(document.content)
+        chunks = []
+        for i, chunk_text in enumerate(chunks_text):
+            chunks.append(
+                Chunk(
+                    document_id=document.id,
+                    content=chunk_text,
+                    chunk_index=i,
+                    metadata={
+                        **document.metadata,
+                        "chunker": "recursive",
+                    },
+                )
+            )
+        return chunks
+
+class SemanticChunker(BaseChunker):
+    def __init__(
+        self,
+        embedder: BaseEmbedder,
+        chunk_size: int = 100,
+        chunk_overlap: int = 0,
+        separators: list[str] | None = None,
+        threshold: float = 0.8,
+
+    ) -> None:
+        if chunk_overlap >= chunk_size:
+            raise ValueError("chunk_overlap must be less than chunk_size")
+        self._chunk_size = chunk_size
+        self._chunk_overlap = chunk_overlap
+        self._embedder = embedder
+        self._separators = separators or _SENTENCE_SEPARATORS
+        self._threshold = threshold
+        self._max_chunk_size = chunk_size*4
+    def _cosine_similarity(self, a: list[float], b: list[float]) -> float:
+        a_np = np.array(a)
+        b_np = np.array(b)
+        return np.dot(a_np, b_np) / (np.linalg.norm(a_np) * np.linalg.norm(b_np))
+
+    def split(self, document: Document) -> list[Chunk]:
+        """
+        Split document text using semantic similarity.
+
+        Chunks are split at points where the cosine similarity between adjacent
+        chunks drops below a certain threshold.
+        """
+        logger.info(
+            "semantic_chunker",
+            message="SemanticChunker.",
+        )
+        sentence_splitter = RecursiveCharacterTextSplitter(
+            separators=self._separators,
+            chunk_size=self._chunk_size,
+            chunk_overlap=self._chunk_overlap,
+        )
+        chunks_sentence = sentence_splitter.split_text(document.content)
+        chunks_sentence_embedded = self._embedder.embed_texts_batched(chunks_sentence)
+        current_chunk = [chunks_sentence[0]]
+        chunks = []
+        for i, chunk_sentence in enumerate(chunks_sentence[1:], start = 1):
+            sim = self._cosine_similarity(chunks_sentence_embedded[i], chunks_sentence_embedded[i-1])
+            if sim < self._threshold or sum(len(s) for s in current_chunk) >= self._max_chunk_size:
+                chunks.append(
+                    Chunk(
+                    document_id=document.id,
+                    content=" ".join(current_chunk),
+                    chunk_index=len(chunks),
+                    metadata={
+                        **document.metadata,
+                        "chunker": "semantic",
+                    },
+                ))
+                current_chunk = [chunk_sentence]
+            else:
+                current_chunk.append(chunk_sentence)
+        if current_chunk:
+            chunks.append(Chunk(
+                    document_id=document.id,
+                    content=" ".join(current_chunk),
+                    chunk_index=len(chunks),
+                    metadata={
+                        **document.metadata,
+                        "chunker": "semantic",
+                    },
+                ))
         return chunks

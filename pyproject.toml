@@ -28,6 +28,14 @@ dependencies = [
     "typing-extensions>=4.0.0",
     # Vector DB
     "chromadb>=0.4.0",
+    # math
+    "numpy>=2.0.0",
+    # sentence-transformers
+    "sentence-transformers>=2.2.0",
+    # rank_bm25
+    "rank_bm25>=0.2.2",
+    # langchain_text_splitters
+    "langchain_text_splitters>=0.2.0",
 ]
 
 [project.optional-dependencies]

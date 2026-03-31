@@ -70,7 +70,7 @@ class ChromaVectorStore(BaseVectorStore):
         chunk_index=results["metadatas"][0][i].get("chunk_index",0), 
         metadata=results["metadatas"][0][i]), # end chunk
         results["distances"][0][i]) # end tuple
-                for i in range(min(top_k, len(results["ids"][0])))] # compare top_k with actual number of results
+                for i in range(len(results["ids"][0]))] #
 
     def delete_by_document_id(self, document_id: str) -> None:
         self._collection.delete(where={"document_id": document_id})
@@ -81,3 +81,19 @@ class ChromaVectorStore(BaseVectorStore):
         count = self._collection.count()
         logger.info("chroma_count", count=count)
         return count
+
+    def get_all_chunks(self) -> list[Chunk]:
+        """
+        Get all documents from the vector store
+        """
+        results = self._collection.get(include=["documents", "metadatas"])
+        return [
+            Chunk(
+                id=results["ids"][i],
+                document_id=results["metadatas"][i].get("document_id", "unknown"),
+                content=results["documents"][i],
+                chunk_index=results["metadatas"][i].get("chunk_index", 0),
+                metadata=results["metadatas"][i],
+            )
+            for i in range(len(results["ids"]))
+        ]

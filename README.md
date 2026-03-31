@@ -220,10 +220,9 @@ Ordered by priority for a typical intern sprint:
 - [x] Update `.env` with a real `OPENAI_API_KEY` and test end-to-end
 
 ### Sprint 2 — Improve chunking & retrieval
-- [ ] `chunking/text_splitter.py` — implement true recursive separator logic
-- [ ] Add token-aware chunking (tiktoken)
-- [ ] `retriever/` — add hybrid search (BM25 + dense)
-- [ ] `reranker/cross_encoder.py` — install `sentence-transformers`, implement `rerank()`
+- [x] `chunking/text_splitter.py` — implement true recursive separator logic
+- [x] `retriever/` — add hybrid search (BM25 + dense)
+- [x] `reranker/cross_encoder.py` — install `sentence-transformers`, implement `rerank()`
 
 ### Sprint 3 — Better ingestion
 - [ ] `ingestion/file_loader.py` — add PDF loader (pypdf/pymupdf)

@@ -64,3 +64,8 @@ class BaseVectorStore(ABC):
     def count(self) -> int:
         """Return the total number of chunks stored."""
         ...
+    
+    @abstractmethod
+    def get_all_chunks(self) -> list[Chunk]:
+        """Return all chunks stored."""
+        ...
