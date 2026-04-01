@@ -61,6 +61,19 @@ class BaseVectorStore(ABC):
         ...
 
     @abstractmethod
+    def document_exists(self, content_hash: str) -> bool:
+        """
+        Check if a document with the given content hash already exists.
+
+        Args:
+            content_hash: The SHA-256 hash of the document content.
+
+        Returns:
+            True if one or more chunks exist with this hash, False otherwise.
+        """
+        ...
+
+    @abstractmethod
     def count(self) -> int:
         """Return the total number of chunks stored."""
         ...

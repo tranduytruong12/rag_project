@@ -225,9 +225,9 @@ Ordered by priority for a typical intern sprint:
 - [x] `reranker/cross_encoder.py` — install `sentence-transformers`, implement `rerank()`
 
 ### Sprint 3 — Better ingestion
-- [ ] `ingestion/file_loader.py` — add PDF loader (pypdf/pymupdf)
-- [ ] `ingestion/web_loader.py` — implement with httpx + trafilatura
-- [ ] Add document deduplication by content hash
+- [x] `ingestion/file_loader.py` — add PDF loader (pypdf/pymupdf)
+- [x] `ingestion/web_loader.py` — implement with httpx + trafilatura
+- [x] Add document deduplication by content hash
 
 ### Sprint 4 — Evaluation
 - [ ] `evaluation/metrics.py` — implement LLM-judge scoring for faithfulness + relevance
@@ -257,5 +257,3 @@ Ordered by priority for a typical intern sprint:
 | No frontend | — | API-first; UI can be added independently (e.g. Streamlit, Next.js) |
 
 ---
-
-*Built with ❤️ as a learning scaffold. Questions? Check the TODO comments inside each module.*

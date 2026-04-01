@@ -11,6 +11,9 @@ TODO: Implement HTTP content fetching with:
 
 from __future__ import annotations
 
+import httpx
+import trafilatura
+
 from rag.ingestion.base import BaseLoader
 from rag.schemas.document import Document, DocumentSource
 from rag.utils import get_logger
@@ -45,11 +48,35 @@ class WebLoader(BaseLoader):
             A single-element list with the page content as a Document.
 
         Raises:
-            NotImplementedError: Until HTTP fetching is implemented.
+            httpx.HTTPError: If the request fails.
+            ValueError: If the content cannot be extracted or is empty.
         """
-        logger.warning("web_loader_not_implemented", url=source)
-        # TODO: replace with actual httpx + HTML parsing logic
-        raise NotImplementedError(
-            "WebLoader is not yet implemented. "
-            "See TODO in rag/ingestion/web_loader.py for implementation guidance."
+        logger.info("web_loader_fetch", url=source)
+
+        with httpx.Client(timeout=self._timeout, follow_redirects=True) as client:
+            response = client.get(source)
+            response.raise_for_status()
+            html_content = response.text
+
+        # Use trafilatura to extract the main text content, stripping boilerplate
+        extracted_text = trafilatura.extract(
+            html_content,
+            include_comments=False,
+            include_tables=True,
+            no_fallback=False
         )
+
+        if not extracted_text or not extracted_text.strip():
+            logger.error("web_loader_empty_content", url=source)
+            raise ValueError(f"Content extraction returned empty text for URL: {source}")
+
+        doc = Document(
+            content=extracted_text.strip(),
+            source=source,
+            source_type=DocumentSource.url,
+            metadata={
+                "url": source,
+                "content_length": len(extracted_text),
+            },
+        )
+        return [doc]

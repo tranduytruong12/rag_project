@@ -66,6 +66,9 @@ class TestDirectoryLoader:
 
 
 class TestWebLoader:
-    def test_raises_not_implemented(self) -> None:
-        with pytest.raises(NotImplementedError):
-            WebLoader().load("https://example.com")
+    def test_loads_sample_website(self) -> None:
+        loader = WebLoader()
+        docs = loader.load("https://example.com")
+        assert len(docs) == 1
+        assert "example" in docs[0].content.lower()
+        assert docs[0].source_type == DocumentSource.url

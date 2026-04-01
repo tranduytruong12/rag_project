@@ -18,6 +18,8 @@ dependencies = [
     # Schema / validation
     "pydantic>=2.0.0",
     "pydantic-settings>=2.0.0",
+    # OpenAI — core dependency for embedding + generation
+    "openai>=1.0.0",
     # Async HTTP (for external API calls)
     "httpx>=0.24.0",
     # Structured logging
@@ -28,14 +30,18 @@ dependencies = [
     "typing-extensions>=4.0.0",
     # Vector DB
     "chromadb>=0.4.0",
-    # math
+    # Math
     "numpy>=2.0.0",
-    # sentence-transformers
+    # Reranker
     "sentence-transformers>=2.2.0",
-    # rank_bm25
+    # BM25 sparse retrieval
     "rank_bm25>=0.2.2",
-    # langchain_text_splitters
+    # Recursive text splitting
     "langchain_text_splitters>=0.2.0",
+    # PDF loading
+    "pypdf>=4.0.0",
+    # Web scraping and HTML extraction
+    "trafilatura>=1.8.0",
 ]
 
 [project.optional-dependencies]
@@ -53,8 +59,8 @@ dev = [
 ]
 
 rag = [
+    # Full LangChain suite — only needed for LangChain agents/chains (not used in core pipeline)
     "langchain>=0.2.0",
-    "openai>=1.0.0",
 ]
 
 local-llm = [

@@ -20,6 +20,7 @@ Usage::
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import hashlib
 
 from rag.chunking.base import BaseChunker
 from rag.config import get_settings
@@ -41,6 +42,7 @@ class IngestionResult:
     chunks_created: int = 0
     chunks_embedded: int = 0
     chunks_stored: int = 0
+    documents_skipped: int = 0
     errors: list[str] = field(default_factory=list)
 
     @property
@@ -101,6 +103,7 @@ class IngestionPipeline:
             "ingestion_complete",
             documents=result.documents_loaded,
             chunks_stored=result.chunks_stored,
+            documents_skipped=result.documents_skipped,
             errors=len(result.errors),
         )
         return result
@@ -118,9 +121,25 @@ class IngestionPipeline:
         result.documents_loaded += len(documents)
         logger.info("step_load", source=source, doc_count=len(documents))
 
+        # Check for deduplication
+        documents_to_process = []
+        for doc in documents:
+            content_hash = hashlib.sha256(doc.content.encode("utf-8")).hexdigest()
+            doc.metadata["content_hash"] = content_hash
+            
+            if self._vector_store.document_exists(content_hash):
+                logger.info("step_deduplicate_skip", source=doc.source, content_hash=content_hash)
+                result.documents_skipped += 1
+            else:
+                documents_to_process.append(doc)
+
+        if not documents_to_process:
+            logger.info("all_documents_skipped_deduplication", source=source)
+            return
+
         # Step 2 — Chunk
         chunks: list[Chunk] = []
-        for doc in documents:
+        for doc in documents_to_process:
             doc_chunks = self._chunker.split(doc)
             chunks.extend(doc_chunks)
         result.chunks_created += len(chunks)

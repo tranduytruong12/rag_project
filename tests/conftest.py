@@ -7,6 +7,8 @@ All fixtures here are available to every test file without explicit import.
 from __future__ import annotations
 
 import pytest
+from unittest.mock import MagicMock
+import uuid
 from fastapi.testclient import TestClient
 
 from rag.schemas.document import Chunk, Document, DocumentSource
@@ -26,9 +28,44 @@ def override_settings(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("OPENAI_API_KEY", "test-key") # Remember to disable this line if you want to use OpenAI
     monkeypatch.setenv("VECTOR_STORE_BACKEND", "chroma")
     monkeypatch.setenv("CHROMA_PERSIST_DIR", "/tmp/test_chroma")
+    monkeypatch.setenv("VECTOR_STORE_COLLECTION", f"test_col_{uuid.uuid4().hex}")
+
+    # Clear cached settings so monkeypatch takes effect for EACH test
+    import rag.config.settings
+    rag.config.settings._settings = None
+
+@pytest.fixture(autouse=True)
+def mock_openai(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Mock out OpenAI API calls to prevent real network requests during tests."""
+    
+    # Mock Embeddings
+    def side_effect_embed(*args, **kwargs):
+        input_data = kwargs.get("input", [])
+        inputs = input_data if isinstance(input_data, list) else [input_data]
+        res = MagicMock()
+        res.data = [MagicMock(embedding=[0.1] * 1536) for _ in inputs]
+        return res
+        
+    mock_create_embedding = MagicMock(side_effect=side_effect_embed)
+    try:
+        monkeypatch.setattr("openai.resources.embeddings.Embeddings.create", mock_create_embedding)
+    except Exception:
+        pass # Handle if openai sdk is old/different
+
+    # Mock Chat Completions
+    mock_create_chat = MagicMock()
+    res_chat = MagicMock()
+    res_chat.choices = [MagicMock()]
+    res_chat.choices[0].message.content = "Mocked answer"
+    mock_create_chat.return_value = res_chat
+    try:
+        monkeypatch.setattr("openai.resources.chat.completions.Completions.create", mock_create_chat)
+    except Exception:
+        pass
 
 
 # --------------------------------------------------------------------------
+
 # Domain object fixtures
 # --------------------------------------------------------------------------
 

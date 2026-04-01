@@ -77,6 +77,20 @@ class ChromaVectorStore(BaseVectorStore):
         logger.info("chroma_delete_successfully", document_id=document_id)
         return None
 
+    def document_exists(self, content_hash: str) -> bool:
+        """
+        Check if a document with the given content hash is already in ChromaDB.
+        """
+        results = self._collection.get(
+            where={"content_hash": content_hash},
+            limit=1,
+            include=["metadatas"]
+        )
+        exists = len(results["ids"]) > 0
+        if exists:
+            logger.info("document_already_exists", content_hash=content_hash)
+        return exists
+
     def count(self) -> int:
         count = self._collection.count()
         logger.info("chroma_count", count=count)
