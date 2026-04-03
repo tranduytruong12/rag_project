@@ -1,12 +1,5 @@
 """
-Ingestion — File Loader (stub).
-
-TODO: Implement loaders for:
-  - Plain text (.txt)
-  - PDF (.pdf) — suggested lib: pypdf or pymupdf
-  - Word (.docx) — suggested lib: python-docx
-  - CSV / JSON
-  - Markdown (.md)
+Ingestion — File Loader.
 
 Current implementation: reads plain text files only.
 """

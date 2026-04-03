@@ -24,12 +24,13 @@ A **production-ready scaffold** for a Retrieval-Augmented Generation (RAG) syste
 ## Goal
 
 Build a modular RAG system that can:
-1. **Ingest** documents (PDF, TXT, URLs) and index them in a vector store.
+1. **Ingest** documents (PDF, MD, TXT, URLs) and index them in a vector store.
 2. **Retrieve** the most relevant chunks for a user query.
 3. **Generate** a grounded answer using an LLM.
 4. **Serve** everything via a REST API.
 5. **Evaluate** quality with standard RAG metrics.
-
+6. **UI** for the RAG system.
+7. **Packing & Deploy** the RAG system.
 ---
 
 ## Architecture
@@ -230,18 +231,18 @@ Ordered by priority for a typical intern sprint:
 - [x] Add document deduplication by content hash
 
 ### Sprint 4 — Evaluation
-- [ ] `evaluation/metrics.py` — implement LLM-judge scoring for faithfulness + relevance
-- [ ] Build eval dataset in `data/eval/dataset.json`
-- [ ] Add `scripts/evaluate.py` CLI
+- [-] `evaluation/metrics.py` — implement LLM-judge scoring for faithfulness + relevance
+- [-] Build eval dataset in `data/eval/dataset.json`
+- [-] Add `scripts/evaluate.py` CLI
 
 ### Sprint 5 — Production hardening
-- [ ] Add retry + exponential back-off (tenacity) to all API clients
-- [ ] `api/` — add API-key authentication header
-- [ ] Add background task processing for large ingestion jobs
-- [ ] Raise test coverage threshold to ≥ 70%
+- [x] Add retry + exponential back-off (tenacity) to all API clients
+- [x] `api/` — add API-key authentication header
+- [x] Add background task processing for large ingestion jobs
+- [x] Raise test coverage threshold to ≥ 70%
 - [ ] Add Docker + docker-compose setup
-- [ ] Add GitHub Actions CI workflow
-
+### Sprint 6 - UI
+- [x] Add UI for the RAG system
 ---
 
 ## Design Decisions
@@ -254,6 +255,6 @@ Ordered by priority for a typical intern sprint:
 | Logging | structlog | JSON-structured in prod, human-readable in dev; zero stdlib friction |
 | Abstract classes | `ABC` + `abstractmethod` | Enforces consistent interfaces; makes dependency injection and mocking trivial |
 | No Celery/task queue | — | Out of scope for intern sprint; noted as Sprint 5 item |
-| No frontend | — | API-first; UI can be added independently (e.g. Streamlit, Next.js) |
+| Frontend | Streamlit | Simple UI for the RAG system
 
 ---

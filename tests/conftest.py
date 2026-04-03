@@ -127,4 +127,6 @@ def api_client() -> TestClient:
     # Import here to avoid side effects at collection time
     from rag.api.main import create_app
     app = create_app()
-    return TestClient(app, raise_server_exceptions=True)
+    client = TestClient(app, raise_server_exceptions=True)
+    client.headers.update({"X-API-Key": "dev-key"})
+    return client

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 import openai
+from tenacity import retry, wait_exponential, stop_after_attempt
 
 from rag.config import get_settings
 from rag.generator.base import BaseGenerator
@@ -38,6 +39,8 @@ class OpenAIGenerator(BaseGenerator):
             api_key=settings.openai_api_key,
             base_url=settings.openai_base_url,
         )
+    
+    @retry(wait=wait_exponential(multiplier=1, min=2, max=10), stop=stop_after_attempt(3))
     def generate(
         self,
         query_text: str,

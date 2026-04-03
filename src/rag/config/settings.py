@@ -75,6 +75,8 @@ class Settings(BaseSettings):
     # ------------------------------------------------------------------ API
     api_host: str = Field(default="0.0.0.0")
     api_port: int = Field(default=8000, ge=1, le=65535)
+    app_api_key: str = Field(default="dev-key", description="Static API Key to protect endpoints")
+
 
     # ------------------------------------------------------------------ LLM
     openai_api_key: str = Field(default="", description="OpenAI (or compatible) API key")

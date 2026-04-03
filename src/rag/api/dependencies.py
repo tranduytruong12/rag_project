@@ -5,18 +5,14 @@ Use FastAPI's `Depends()` to inject shared resources into route handlers.
 This ensures:
   - Single instantiation of expensive objects (pipeline, vector store)
   - Easy mocking in tests (override with app.dependency_overrides)
-
-TODO:
-  - Replace stub instances with real implementations once backends are wired up
-  - Add connection pool / singleton pattern for vector store
-  - Add authentication dependency (OAuth2 / API-key header)
 """
 
 from __future__ import annotations
 
 from functools import lru_cache
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException, Security, status
+from fastapi.security.api_key import APIKeyHeader
 
 from rag.chunking.text_splitter import FixedSizeChunker
 from rag.config import Settings, get_settings
@@ -27,6 +23,25 @@ from rag.pipeline.ingestion_pipeline import IngestionPipeline
 from rag.pipeline.rag_pipeline import RAGPipeline
 from rag.retriever.similarity_retriever import SimilarityRetriever
 from rag.vector_store.chroma_store import ChromaVectorStore
+
+
+# --------------------------------------------------------------------------
+# Auth Dependencies
+# --------------------------------------------------------------------------
+
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=True)
+
+def verify_api_key(
+    api_key: str = Security(api_key_header),
+    settings: Settings = Depends(get_settings),
+) -> str:
+    """Validate that the incoming request has the correct API key."""
+    if api_key != settings.app_api_key:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid API Key",
+        )
+    return api_key
 
 
 # --------------------------------------------------------------------------
@@ -78,7 +93,6 @@ def get_rag_pipeline(
     )
     generator = OpenAIGenerator()
 
-    # TODO: conditionally inject reranker based on settings.reranker_enabled
     return RAGPipeline(
         retriever=retriever,
         generator=generator,

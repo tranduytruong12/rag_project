@@ -36,9 +36,7 @@ class RetrievedChunk(BaseModel):
 
     chunk: Chunk
     score: float = Field(
-        ge=0.0,
-        le=1.0,
-        description="Relevance / similarity score (higher = more relevant)",
+        description="Relevance / similarity score (unbounded, higher or lower depends on algorithm)",
     )
     rank: int = Field(ge=1, description="Rank position after retrieval (1-indexed)")
 

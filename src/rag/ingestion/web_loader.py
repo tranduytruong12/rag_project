@@ -1,18 +1,12 @@
 """
-Ingestion — Web / URL Loader (stub).
-
-TODO: Implement HTTP content fetching with:
-  - httpx for async requests
-  - HTML stripping (beautifulsoup4 or trafilatura)
-  - robots.txt respect
-  - rate limiting / retry logic
-  - sitemap crawling
+Ingestion — Web / URL Loader.
 """
 
 from __future__ import annotations
 
 import httpx
 import trafilatura
+from tenacity import retry, wait_exponential, stop_after_attempt
 
 from rag.ingestion.base import BaseLoader
 from rag.schemas.document import Document, DocumentSource
@@ -24,19 +18,12 @@ logger = get_logger(__name__)
 class WebLoader(BaseLoader):
     """
     Load documents from web URLs.
-
-    Stub only — fetching and HTML extraction not yet implemented.
-
-    TODO:
-      - Use `httpx.AsyncClient` for async HTTP
-      - Strip HTML tags (trafilatura recommended for main-content extraction)
-      - Follow redirects, handle 4xx/5xx gracefully
-      - Add optional authentication headers
     """
 
     def __init__(self, timeout_seconds: float = 10.0) -> None:
         self._timeout = timeout_seconds
 
+    @retry(wait=wait_exponential(multiplier=1, min=2, max=10), stop=stop_after_attempt(3))
     def load(self, source: str) -> list[Document]:
         """
         Fetch and parse content from `source` URL.

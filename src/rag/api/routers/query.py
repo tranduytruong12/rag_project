@@ -2,14 +2,7 @@
 API Router — Query / Chat endpoints.
 
 POST /api/v1/query   →  single-turn Q&A
-POST /api/v1/chat    →  multi-turn chat (TODO: memory not yet implemented)
-
-TODO:
-  - Add streaming response support (StreamingResponse + SSE)
-  - Add conversation memory / session management for /chat
-  - Add request-level top_k and filter overrides
-  - Add rate limiting middleware
-  - Add response caching for repeated queries
+POST /api/v1/chat    →  multi-turn chat
 """
 
 from __future__ import annotations
@@ -94,24 +87,17 @@ async def query(
 @router.post(
     "/chat",
     response_model=QueryResponse,
-    summary="Multi-turn chat (stub)",
+    summary="Multi-turn chat",
     description=(
         "Multi-turn conversational RAG. "
-        "Currently uses only the last user message. "
-        "TODO: Implement conversation memory."
+        "Currently uses only the last user message."
     ),
 )
 async def chat(
     request: ChatRequest,
     pipeline: RAGPipeline = Depends(get_rag_pipeline),
 ) -> QueryResponse:
-    """
-    TODO:
-      - Extract conversation history from request.messages
-      - Compress/summarise history for context window management
-      - Pass history to the generator's system prompt
-    """
-    # Stub: use only the last user message
+    # Use only the last user message
     last_user_msg = next(
         (m.content for m in reversed(request.messages) if m.role == "user"),
         None,

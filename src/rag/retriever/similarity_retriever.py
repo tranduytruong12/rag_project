@@ -1,11 +1,5 @@
 """
-Retriever — Similarity Retriever (stub).
-
-TODO:
-  - Wire embedder.embed_query() → real query vector
-  - Wire vector_store.search() → real nearest-neighbor search
-  - Add hybrid search (BM25 + dense) option
-  - Add metadata pre-filtering
+Retriever — Similarity Retriever.
 """
 
 from __future__ import annotations

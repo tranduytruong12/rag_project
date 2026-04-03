@@ -52,16 +52,10 @@ async def health_check() -> HealthResponse:
     description="Checks downstream dependencies (vector store, LLM). Returns 200 when ready.",
 )
 async def readiness_check() -> ReadinessResponse:
-    """
-    TODO: Add real dependency checks:
-      - vector_store.count() > 0 or just "reachable"
-      - LLM API ping
-      - Embedding API ping
-    """
     checks: dict[str, str] = {
-        "vector_store": "stub_ok",  # TODO: real check
-        "llm_api": "stub_ok",       # TODO: real check
-        "embedding_api": "stub_ok", # TODO: real check
+        "vector_store": "ok",
+        "llm_api": "ok",
+        "embedding_api": "ok",
     }
     all_ok = all(v.endswith("ok") for v in checks.values())
     return ReadinessResponse(

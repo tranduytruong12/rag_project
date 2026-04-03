@@ -9,9 +9,10 @@ from __future__ import annotations
 from contextlib import asynccontextmanager
 from collections.abc import AsyncGenerator
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
+from rag.api.dependencies import verify_api_key
 from rag.api.routers import health, ingest, query
 from rag.config import get_settings
 from rag.utils import configure_logging, get_logger
@@ -26,11 +27,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     Startup: configure logging, validate settings, warm up connections.
     Shutdown: flush logs, close connections.
-
-    TODO:
-      - Initialise vector store connection pool
-      - Pre-load embedding model if running local inference
-      - Ping LLM API for health check
     """
     settings = get_settings()
     configure_logging()
@@ -56,7 +52,7 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="RAG Project API",
         description=(
-            "Production-ready RAG (Retrieval-Augmented Generation) scaffold. "
+            "Production-ready RAG Project."
             "See /docs for interactive API documentation."
         ),
         version="0.1.0",
@@ -65,7 +61,6 @@ def create_app() -> FastAPI:
     )
 
     # ------------------------------------------------------------------ CORS
-    # TODO: Tighten allow_origins in production (replace * with actual domains)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"] if settings.app_debug else [],
@@ -75,9 +70,13 @@ def create_app() -> FastAPI:
     )
 
     # ------------------------------------------------------------------ Routers
+    
+    # Global protection for API routes
+    api_dependencies = [Depends(verify_api_key)]
+
     app.include_router(health.router, tags=["Health"])
-    app.include_router(ingest.router, prefix="/api/v1", tags=["Ingestion"])
-    app.include_router(query.router, prefix="/api/v1", tags=["Query"])
+    app.include_router(ingest.router, prefix="/api/v1", tags=["Ingestion"], dependencies=api_dependencies)
+    app.include_router(query.router, prefix="/api/v1", tags=["Query"], dependencies=api_dependencies)
 
     return app
 

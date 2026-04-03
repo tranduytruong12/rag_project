@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import openai
+from tenacity import retry, wait_exponential, stop_after_attempt
 
 from rag.config import get_settings
 from rag.embedding.base import BaseEmbedder
@@ -36,6 +37,7 @@ class OpenAIEmbedder(BaseEmbedder):
     def dimension(self) -> int:
         return self._dimension
 
+    @retry(wait=wait_exponential(multiplier=1, min=2, max=10), stop=stop_after_attempt(3))
     def embed_texts(self, texts: list[str]) -> list[list[float]]:
         """
         Embed texts via the OpenAI embeddings endpoint.

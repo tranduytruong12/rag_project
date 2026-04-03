@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "rag-project"
 version = "0.1.0"
-description = "RAG (Retrieval-Augmented Generation) system scaffold — production-ready foundation"
+description = "RAG (Retrieval-Augmented Generation) system — production-ready foundation"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
@@ -42,6 +42,12 @@ dependencies = [
     "pypdf>=4.0.0",
     # Web scraping and HTML extraction
     "trafilatura>=1.8.0",
+    # Retry logic
+    "tenacity>=8.2.0",
+    # File upload handling in FastAPI
+    "python-multipart>=0.0.9",
+    # UI Framework
+    "streamlit>=1.32.0",
 ]
 
 [project.optional-dependencies]
@@ -120,7 +126,7 @@ omit = ["*/tests/*", "*/__init__.py"]
 
 [tool.coverage.report]
 show_missing = true
-fail_under = 0   # set to e.g. 70 when real tests are added
+fail_under = 70   # set to e.g. 70 when real tests are added
 
 # ---------- Package discovery ----------
 [tool.setuptools.packages.find]

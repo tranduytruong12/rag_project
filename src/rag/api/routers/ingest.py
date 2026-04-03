@@ -3,17 +3,11 @@ API Router — Ingestion endpoints.
 
 POST /api/v1/ingest/file    →  ingest a single file path
 POST /api/v1/ingest/batch   →  ingest a list of file paths
-
-TODO:
-  - Add multipart file upload (UploadFile) instead of raw path strings
-  - Add background task processing (BackgroundTasks or Celery)
-  - Add ingestion status tracking (job ID + polling endpoint)
-  - Add input validation for allowed file extensions
 """
 
-from __future__ import annotations
-
-from fastapi import APIRouter, Depends, HTTPException, status
+import shutil
+import uuid
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, UploadFile, File
 from pydantic import BaseModel, Field
 
 from rag.api.dependencies import get_ingestion_pipeline
@@ -42,58 +36,74 @@ class IngestResponse(BaseModel):
     errors: list[str]
 
 
+class AsyncJobResponse(BaseModel):
+    message: str
+    status: str = "accepted"
+
+
 # --------------------------------------------------------------------------
 # Routes
 # --------------------------------------------------------------------------
 
 @router.post(
     "/ingest/file",
-    response_model=IngestResponse,
-    status_code=status.HTTP_200_OK,
-    summary="Ingest a single file",
+    response_model=AsyncJobResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Ingest a single file asynchronously",
 )
 async def ingest_file(
     request: IngestFileRequest,
+    background_tasks: BackgroundTasks,
     pipeline: IngestionPipeline = Depends(get_ingestion_pipeline),
-) -> IngestResponse:
+) -> AsyncJobResponse:
     """
-    Load, chunk, embed, and store a single document from `source_path`.
+    Queue a single document for ingestion.
+    """
+    background_tasks.add_task(pipeline.run, sources=[request.source_path])
+    return AsyncJobResponse(message=f"Ingestion started for {request.source_path}")
 
-    TODO: Replace file-path input with UploadFile for real API usage.
+
+@router.post(
+    "/ingest/upload",
+    response_model=AsyncJobResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Upload and ingest a file asynchronously",
+)
+async def ingest_upload(
+    background_tasks: BackgroundTasks,
+    file: UploadFile = File(...),
+    pipeline: IngestionPipeline = Depends(get_ingestion_pipeline),
+) -> AsyncJobResponse:
     """
-    result: IngestionResult = pipeline.run(sources=[request.source_path])
-    if not result.success:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail={"errors": result.errors},
-        )
-    return _to_response(result)
+    Upload a document and queue it for ingestion.
+    """
+    from rag.config import get_settings
+    settings = get_settings()
+    settings.data_raw_dir.mkdir(parents=True, exist_ok=True)
+    
+    safe_filename = file.filename if file.filename else f"upload_{uuid.uuid4().hex[:8]}"
+    file_path = settings.data_raw_dir / safe_filename
+    
+    with file_path.open("wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    background_tasks.add_task(pipeline.run, sources=[str(file_path)])
+    return AsyncJobResponse(message=f"File {safe_filename} uploaded and ingestion started.")
 
 
 @router.post(
     "/ingest/batch",
-    response_model=IngestResponse,
-    status_code=status.HTTP_200_OK,
-    summary="Ingest multiple files",
+    response_model=AsyncJobResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Ingest multiple files asynchronously",
 )
 async def ingest_batch(
     request: IngestBatchRequest,
+    background_tasks: BackgroundTasks,
     pipeline: IngestionPipeline = Depends(get_ingestion_pipeline),
-) -> IngestResponse:
+) -> AsyncJobResponse:
     """
-    Ingest multiple documents in a single request.
-
-    TODO: Move to background task for large batches.
+    Queue multiple documents for ingestion.
     """
-    result: IngestionResult = pipeline.run(sources=request.source_paths)
-    return _to_response(result)
-
-
-def _to_response(result: IngestionResult) -> IngestResponse:
-    return IngestResponse(
-        success=result.success,
-        sources_processed=result.sources_processed,
-        documents_loaded=result.documents_loaded,
-        chunks_stored=result.chunks_stored,
-        errors=result.errors,
-    )
+    background_tasks.add_task(pipeline.run, sources=request.source_paths)
+    return AsyncJobResponse(message=f"Ingestion batch started for {len(request.source_paths)} sources")

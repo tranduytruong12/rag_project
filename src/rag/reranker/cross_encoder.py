@@ -1,12 +1,5 @@
 """
-Reranker — Cross-Encoder Reranker (stub).
-
-TODO:
-  - Install `sentence-transformers` package
-  - Load cross-encoder model: CrossEncoder(model_name)
-  - Score (query, chunk) pairs with model.predict()
-  - Re-sort chunks by new score
-  - Support async / batched inference
+Reranker — Cross-Encoder Reranker.
 """
 
 from __future__ import annotations

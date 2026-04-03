@@ -1,14 +1,9 @@
 """
-Chunking — Text Splitter implementations (stub).
+Chunking — Text Splitter implementations.
 
 Provides two concrete strategies:
   1. FixedSizeChunker — simple character-count windows with overlap
-  2. RecursiveChunker — split on paragraph/sentence/word boundaries (stub)
-
-TODO:
-  - Implement semantic chunking (split on topic boundaries using embeddings)
-  - Add token-count-aware chunking (tiktoken for OpenAI models)
-  - Respect document structure (headings, tables) for structured sources
+  2. RecursiveChunker — split on paragraph/sentence/word boundaries
 """
 
 from __future__ import annotations
@@ -90,11 +85,6 @@ class RecursiveChunker(BaseChunker):
 
     Tries each separator in `separators` order; falls back to the next if chunks
     are still too large.
-
-    TODO:
-      - Fully implement recursive splitting logic
-      - Respect token limits (tiktoken) instead of character counts
-      - Handle code blocks, tables, and lists explicitly
     """
 
     def __init__(

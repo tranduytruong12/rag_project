@@ -35,12 +35,12 @@ class TestIngestEndpoints:
         resp = api_client.post("/api/v1/ingest/file", json={})
         assert resp.status_code == 422
 
-    def test_ingest_file_nonexistent_path_returns_422(self, api_client: TestClient) -> None:
+    def test_ingest_file_returns_202_accepted(self, api_client: TestClient) -> None:
         resp = api_client.post(
             "/api/v1/ingest/file",
-            json={"source_path": "/nonexistent/file.txt"},
+            json={"source_path": "/some/path/file.txt"},
         )
-        assert resp.status_code == 422
+        assert resp.status_code == 202
 
     def test_ingest_batch_empty_list_returns_422(self, api_client: TestClient) -> None:
         resp = api_client.post("/api/v1/ingest/batch", json={"source_paths": []})
