@@ -1,8 +1,8 @@
 # RAG Project
 
-A **production-ready scaffold** for a Retrieval-Augmented Generation (RAG) system — built for interns and junior engineers to learn, extend, and eventually ship.
+A **production-ready** for a Retrieval-Augmented Generation (RAG) system — built for interns and junior engineers to learn, extend, and eventually ship.
 
-> **Status**: 🏗️ Foundation / Scaffold — pipeline wired end-to-end with stubs. No real LLM or vector DB calls yet.
+> **Status**: 🏗️ Foundation — pipeline wired end-to-end.
 
 ---
 
@@ -210,9 +210,9 @@ ptw tests/
 
 ---
 
-## Next Steps (TODO)
+## Full plan
 
-Ordered by priority for a typical intern sprint:
+Ordered by priority for a typical sprint:
 
 ### Sprint 1 — Connect real backends
 - [x] `embedding/openai_embedder.py` — wire up `openai.embeddings.create()`
@@ -231,9 +231,9 @@ Ordered by priority for a typical intern sprint:
 - [x] Add document deduplication by content hash
 
 ### Sprint 4 — Evaluation (not done yet)
-- [*] `evaluation/metrics.py` — implement LLM-judge scoring for faithfulness + relevance
-- [*] Build eval dataset in `data/eval/dataset.json`
-- [*] Add `scripts/evaluate.py` CLI
+- [] `evaluation/metrics.py` — implement LLM-judge scoring for faithfulness + relevance
+- [] Build eval dataset in `data/eval/dataset.json`
+- [] Add `scripts/evaluate.py` CLI
 
 ### Sprint 5 — Production hardening
 - [x] Add retry + exponential back-off (tenacity) to all API clients
