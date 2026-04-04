@@ -19,15 +19,14 @@ from rag.schemas.query import RetrievalResult
 # Raw template strings
 # ---------------------------------------------------------------------------
 
-SYSTEM_PROMPT = """You are a helpful, precise assistant that answers questions \
-based ONLY on the provided context.
+SYSTEM_PROMPT = """You are a helpful, precise assistant.
 
 Rules:
 - Answer in the same language as the question.
-- If the context does not contain enough information, say so clearly.
-- Do not make up information not present in the context.
+- If context is provided, answer based ONLY on the provided context. Do not make up information not present in the context. Cite the source chunk number when possible (e.g. [1], [2]).
+- If no context is provided (or if you are instructed to do so), answer based on your general knowledge.
+- If the context provided lacks necessary information, say so clearly.
 - Keep answers concise and factual.
-- Cite the source chunk number when possible (e.g. [1], [2]).
 """
 
 RAG_USER_TEMPLATE = """Context:

@@ -1,0 +1,26 @@
+FROM python:3.11-slim
+
+# Non-root user
+RUN useradd --create-home appuser
+
+WORKDIR /app
+
+# Install only what Streamlit needs
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir streamlit>=1.32.0 httpx>=0.24.0
+
+# Copy UI source
+COPY ui/ ui/
+
+RUN chown -R appuser:appuser /app
+USER appuser
+
+EXPOSE 8501
+
+# Allow override of API URL via environment variable
+ENV API_BASE_URL="http://api:8000/api/v1"
+
+CMD ["streamlit", "run", "ui/app.py", \
+     "--server.port=8501", \
+     "--server.address=0.0.0.0", \
+     "--server.headless=true"]

@@ -1,0 +1,85 @@
+# =============================================
+# RAG Project — Docker Compose
+# =============================================
+# Services:
+#   api  — FastAPI backend  (port 8000)
+#   ui   — Streamlit frontend (port 8501)
+#
+# Volumes:
+#   chroma_data — persist ChromaDB between restarts
+#   raw_data    — persist uploaded raw files
+#
+# Usage:
+#   docker compose up --build        # first run
+#   docker compose up -d             # detached mode
+#   docker compose down              # stop
+#   docker compose down -v           # stop + wipe volumes (fresh start)
+# =============================================
+
+services:
+  # ------------------------------------------
+  # FastAPI Backend
+  # ------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: rag_api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      # Override paths to point to container volume mounts
+      CHROMA_PERSIST_DIR: /app/data/chroma
+      DATA_RAW_DIR: /app/data/raw
+      DATA_PROCESSED_DIR: /app/data/processed
+    volumes:
+      - chroma_data:/app/data/chroma
+      - raw_data:/app/data/raw
+    networks:
+      - rag_net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  # ------------------------------------------
+  # Streamlit UI
+  # ------------------------------------------
+  ui:
+    build:
+      context: .
+      dockerfile: Dockerfile.ui
+    container_name: rag_ui
+    restart: unless-stopped
+    ports:
+      - "8501:8501"
+    environment:
+      API_BASE_URL: "http://api:8000/api/v1"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - rag_net
+
+
+# =============================================
+# Named Volumes (persisted data)
+# =============================================
+volumes:
+  chroma_data:
+    driver: local
+  raw_data:
+    driver: local
+
+
+# =============================================
+# Internal Network
+# =============================================
+networks:
+  rag_net:
+    driver: bridge

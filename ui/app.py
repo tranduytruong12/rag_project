@@ -1,6 +1,12 @@
+import os
+
 import streamlit as st
 import httpx
 import json
+
+# When running inside Docker, API_BASE_URL is injected by docker-compose.
+# Falls back to localhost for local development.
+_DEFAULT_API_URL = os.environ.get("API_BASE_URL", "http://localhost:8000/api/v1")
 
 # =====================================================================
 # Configuration & Setup
@@ -16,7 +22,7 @@ if "messages" not in st.session_state:
 with st.sidebar:
     st.title("⚙️ RAG Configuration")
     
-    api_url = st.text_input("FastAPI Base URL", value="http://localhost:8000/api/v1")
+    api_url = st.text_input("FastAPI Base URL", value=_DEFAULT_API_URL)
     api_key = st.text_input("X-API-Key", type="password", value="dev-key", help="The API key required to access the backend.")
     
     if st.button("Clear Chat"):

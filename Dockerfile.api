@@ -1,0 +1,68 @@
+# =============================================
+# Stage: Builder
+# Install dependencies into a clean venv
+# =============================================
+FROM python:3.11-slim AS builder
+
+WORKDIR /build
+
+# Install build tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy only dependency definition first (layer cache)
+COPY pyproject.toml .
+
+# Create venv and install core dependencies
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+RUN pip install --no-cache-dir --upgrade pip
+
+# Install CPU-only PyTorch FIRST to prevent pip from resolving the heavy CUDA build.
+# sentence-transformers and ChromaDB both work fine on CPU.
+# If you have a GPU server, remove this line and torch will auto-resolve CUDA.
+RUN pip install --no-cache-dir \
+    "torch>=2.4.0,<3.0" \
+    --index-url https://download.pytorch.org/whl/cpu
+
+# Copy source after heavy dependencies to optimize cache
+COPY src/ src/
+
+# Install the rest of the project dependencies
+RUN pip install --no-cache-dir ".[rag]"
+
+
+# =============================================
+# Stage: Runtime
+# Lean final image — copy venv from builder
+# =============================================
+FROM python:3.11-slim AS runtime
+
+# Non-root user for security
+RUN useradd --create-home appuser
+
+WORKDIR /app
+
+# Copy virtual environment from builder — no build tools needed at runtime
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy application source
+COPY src/ src/
+
+# Create data directories (will be shadowed by volume mounts)
+RUN mkdir -p data/raw data/processed data/chroma && \
+    chown -R appuser:appuser /app
+
+USER appuser
+
+# Expose FastAPI port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
+
+CMD ["uvicorn", "rag.api.main:app", "--host", "0.0.0.0", "--port", "8000"]

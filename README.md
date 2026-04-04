@@ -230,17 +230,17 @@ Ordered by priority for a typical intern sprint:
 - [x] `ingestion/web_loader.py` — implement with httpx + trafilatura
 - [x] Add document deduplication by content hash
 
-### Sprint 4 — Evaluation
-- [-] `evaluation/metrics.py` — implement LLM-judge scoring for faithfulness + relevance
-- [-] Build eval dataset in `data/eval/dataset.json`
-- [-] Add `scripts/evaluate.py` CLI
+### Sprint 4 — Evaluation (not done yet)
+- [*] `evaluation/metrics.py` — implement LLM-judge scoring for faithfulness + relevance
+- [*] Build eval dataset in `data/eval/dataset.json`
+- [*] Add `scripts/evaluate.py` CLI
 
 ### Sprint 5 — Production hardening
 - [x] Add retry + exponential back-off (tenacity) to all API clients
 - [x] `api/` — add API-key authentication header
 - [x] Add background task processing for large ingestion jobs
 - [x] Raise test coverage threshold to ≥ 70%
-- [ ] Add Docker + docker-compose setup
+- [x] Add Docker + docker-compose setup
 ### Sprint 6 - UI
 - [x] Add UI for the RAG system
 ---
