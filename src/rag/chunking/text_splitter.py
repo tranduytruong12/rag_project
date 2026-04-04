@@ -162,6 +162,14 @@ class SemanticChunker(BaseChunker):
             "semantic_chunker",
             message="SemanticChunker.",
         )
+        # Handling empty document
+        if len(document.content) == 0 or document.content is None:
+            logger.warning(
+                "semantic_chunker",
+                message="Empty document.",
+            )
+            return []
+
         sentence_splitter = RecursiveCharacterTextSplitter(
             separators=self._separators,
             chunk_size=self._chunk_size,
